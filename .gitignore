@@ -1,7 +1,1 @@
 node_modules/
-film/audio/*.wav
-film/data.json
-film/events.json
-film/video_only.mp4
-*.onnx
-voices.bin

@@ -1,24 +1,66 @@
-# Neural Pixel Lab · مختبر البكسل العصبي
+# Neural Pixel Lab
 
-شبكة عصبية صغيرة تتعلّم رسم صورة بكسل 16×16، ثم نغيّر رمزًا واحدًا في إحدى معادلاتها ونرى ماذا يحدث.
+**What happens to a neural network when you change one symbol in its math?**
 
-A tiny neural network learns to draw a 16×16 pixel image. We then change **one symbol** in one of its formulas and watch what happens.
+A tiny network learns to draw a 16×16 pixel image. We then edit a single symbol in one of its formulas (a sign, a square, a root, two swapped variables) and watch what it draws instead.
 
-![Atlas preview](docs/atlas-preview.png)
+[![Neural Pixel Lab film](docs/teaser.gif)](media/neural-pixel-lab.mp4)
 
-## المحتوى · Contents
+**[▶ Watch the full film (2:20)](media/neural-pixel-lab.mp4)**: ten one-symbol edits, with English narration and Arabic subtitles.
 
-| المسار | ما فيه |
-|---|---|
-| `media/neural-pixel-lab.mp4` | الفيديو (2:20): 10 تعديلات بتعليق إنجليزي وترجمة عربية |
-| `atlas/index.html` | أطلس تفاعلي لـ 57 تعديلًا، مع صورة ونتيجة وتفسير لكل تجربة |
-| `lab/index.html` | صفحة تفاعلية تدرّب 12 شبكة في المتصفح مباشرة وتقارنها |
-| `experiments/` | محرك التجارب، والتشغيل المتوازي، والنتائج الخام (JSON) |
-| `film/` | خط إنتاج الفيديو: الرسم والصوت والتعليق |
+---
 
-افتح `atlas/index.html` أو `lab/index.html` في المتصفح مباشرة، فلا يحتاجان خادمًا.
+## The most surprising results
 
-## الشبكة الأصلية · The original network
+### 1. Swapping `tanh` for `cos` beats the original everywhere
+
+![tanh vs cos](docs/fig-cos.png)
+
+`cos` reached 100% on all five patterns, with every random start. The original never reached 100% on the face or the letter R.
+
+We first suspected this was because the heart, face and ring are symmetric, and `cos` is an even function. So we re-tested on R and 7, which are not symmetric: still 100%. At learning rates of 0.3 and 3 it also generally reached 95% sooner than the original.
+
+Our best explanation: each first-layer neuron becomes a wave across the image (much like a Fourier feature), and the gradient of `cos` does not vanish for large inputs the way the gradient of `tanh` does.
+
+### 2. Squaring the input makes the network blind to direction
+
+![x squared](docs/fig-xsq.png)
+
+`x²` gives the same value for `x` and `−x`, so the network cannot tell left from right, or top from bottom. Everything it draws becomes mirror-symmetric in both directions.
+
+That is a disaster for asymmetric shapes: R turns into a butterfly and 7 into an hourglass. It is a gift for the ring, which is already symmetric: learned to 100% in about 35 epochs, while the original needs around 800 or never gets there. The formula decides in advance which shapes the network can see.
+
+### 3. Swapping `w` and `g` should be nonsense, but it still draws the heart
+
+![swap w and g](docs/fig-swap.png)
+
+The gradient `g` is tiny compared to the weights, so `w ← g − η·w` behaves like `w ← −w`: every weight flips sign at every step. We measured it directly, and the similarity between consecutive steps is exactly −1.000 in all three layers.
+
+Taken two steps at a time, the update works out to gradient descent on `L(θ) + L(−θ)`. The network learns a solution that draws the heart with its weights **and** with their negation.
+
+Its near-twin `w ← −w − η·g` also flips every step, but it climbs that same function instead of descending it, and fails completely. One sign apart, opposite outcomes.
+
+### 4. The update survives any distortion that keeps the sign
+
+![sign of the gradient](docs/fig-sign.png)
+
+Across five edits to `g` in the update rule, the rule is simple: keep the sign of the gradient and learning works; lose it and learning fails. `∛g` keeps the sign and learns. `√|g|` and `g²` throw it away, so every step points the same direction and the image goes dark.
+
+The exception proves the point from the other side: `g³` keeps the sign but turns gradients of about 0.001 into 0.000000001, so the network is effectively frozen.
+
+### 5. Backpropagation does not need the exact weights
+
+![backprop variants](docs/fig-backprop.png)
+
+On the way back, the error travels through `Wᵀ`. Replacing it with only the **signs** of the weights matched or beat the original on every pattern. Even a completely **random** fixed matrix still learns the heart (95–97%), though it falls behind on harder shapes. This is a known effect called *feedback alignment*. The one thing backprop cannot survive is reversing direction (`−Wᵀ`).
+
+This matters beyond toy networks: real neurons almost certainly cannot send exact weight values backward, and these results suggest they may not need to.
+
+---
+
+## The experiment
+
+The original network is 2 → 16 → 16 → 1. The input is a pixel position `(x, y)`, and the output is the probability that the pixel is lit. Five formulas define everything it does:
 
 ```
 Neuron          z  = w · x + b
@@ -28,62 +70,43 @@ Backprop        δ  = (Wᵀ · δ′) ⊙ (1 − a²)
 Update rule     w ← w − η · g
 ```
 
-بنية الشبكة 2 → 16 → 16 → 1، والمدخل موقع البكسل (x, y)، والمخرج احتمال أن يكون البكسل مضاءً.
+- **57** one-symbol edits across those five places.
+- Each edit trained on 3 patterns (heart, face, ring) × 3 random starts × 1000 epochs.
+- The key results re-tested on asymmetric shapes (letter R, digit 7) and at other learning rates.
+- **636** full training runs in total.
 
-## التجربة · The experiment
+### Reading the failures
 
-- **57** تعديلًا بالرمز الواحد في 6 أماكن: قاعدة التحديث، والعصبون، ودالة التفعيل، ومشتقة الانتشار العكسي، ومصفوفة الانتشار العكسي، وإشارة الخطأ.
-- كل تعديل على 3 أنماط (قلب، وجه، حلقة) × 3 بدايات عشوائية × 1000 حقبة.
-- إعادة أهم النتائج على أنماط غير متماثلة (حرف R والرقم 7) وبمعدلات تعلّم أخرى.
-- المجموع: **636** عملية تدريب كاملة.
+On the heart, 39% of pixels are lit and 61% are dark. An accuracy of exactly **39%** means the network lit everything; exactly **61%** means it drew nothing. Many failed edits land on one of these two numbers.
 
-## أبرز الاكتشافات · Key findings
+### All 57 experiments
 
-| التعديل | النتيجة | السبب |
-|---|---|---|
-| `tanh(z) → cos(z)` | 100% على الأنماط الخمسة وكل البدايات، أفضل من الأصل | المرجّح: كل عصبون يصير موجة عبر الصورة، والتدرّج لا يتشبع |
-| `x → x²` | الحلقة 100% في ~35 حقبة؛ القلب عالق عند 83%؛ R يصير فراشة | مثبت: x² لا تفرّق بين x و−x، فكل ما ترسمه الشبكة متماثل |
-| `w ← g − η·w` (تبديل w وg) | يتعلّم القلب 98% | مثبت: الأوزان تنقلب كل خطوة، وكل خطوتين ينزل تدرّج L(θ)+L(−θ) |
-| `−w − η·g` | يفشل | أخت التجربة السابقة لكنها تصعد نفس الدالة |
-| `g → ∛g` ✓ / `√|g|`, `g²`, `|g|` ✗ | ما يحافظ على إشارة التدرّج يتعلّم | الإشارة تحدد الاتجاه، والمقدار يمكن تشويهه |
-| `g → g³` | يفشل | التدرّجات ~0.001، وتكعيبها يصغّر الخطوات مليار مرة |
-| `Wᵀ → sign(W)ᵀ` في الانتشار العكسي | مثل الأصل أو أفضل في الأنماط الخمسة | الانتشار العكسي لا يحتاج قيم الأوزان بدقة (sign symmetry) |
-| `Wᵀ → B` عشوائية | يتعلّم القلب 95–97% | محاذاة التغذية الراجعة (feedback alignment) |
-| `−(1−a²)` و `−Wᵀ` | أرقام متطابقة حرفيًا | هوية رياضية: الاثنان يقلبان إشارة δ |
+Open [`atlas/index.html`](atlas/index.html) in a browser for every experiment: the image it produced on each pattern, its accuracy, and an explanation of why it happened. The atlas is written in Arabic.
 
-التفاصيل الكاملة والتفسير لكل تجربة في `atlas/index.html`.
+[`lab/index.html`](lab/index.html) trains 12 network variants live in your browser so you can compare them, or draw your own target pattern.
 
-## التشغيل · Running it
+## Running the experiments
 
-المتطلبات: Node.js 18+، وPython 3 مع `numpy` و`scipy` و`soundfile`، وffmpeg، وPlaywright مع Chromium لإنتاج الفيديو فقط.
+Requires Node.js 18+.
 
 ```bash
 cd experiments
-node sweep.js                      # 522 runs on heart/smile/ring → sweep.json (~7 min on 4 cores)
-PATS=R,seven ONLY=base,a_cos,n_xsq OUT=sweep_asym.json node sweep.js
-node analyze.js                    # text summary + ASCII pixel grids
-node build_data.js                 # → atlas_data.json for the atlas page
+node sweep.js        # 522 runs on heart/face/ring → sweep.json (~7 min on 4 cores)
+node analyze.js      # text summary with ASCII pixel grids
 ```
 
-إنتاج الفيديو:
+Re-run selected edits on the asymmetric patterns:
 
 ```bash
-cd film
-node pre2.js                       # precompute all training runs → data.json
-pip install kokoro-onnx soundfile  # narration voice (model files from the kokoro-onnx GitHub releases)
-python3 tts.py <kokoro-model-dir> . bm_george
-node events.js && python3 audio.py .
-node video.js                      # renders 1920×1080 frames → video_only.mp4
-ffmpeg -i video_only.mp4 -i audio/mix.wav -c:v copy -c:a aac -shortest out.mp4
+PATS=R,seven ONLY=base,a_cos,n_xsq,b_signW OUT=sweep_asym.json node sweep.js
+IN=sweep_asym.json PATS=R,seven node analyze.js
 ```
 
-## الصوت · Audio
+Each edit is one line in `experiments/sweep.js`, so adding your own takes a minute.
 
-- التعليق مولّد محليًا بنموذج [Kokoro](https://github.com/thewh1teagle/kokoro-onnx) مفتوح المصدر.
-- الموسيقى والمؤثرات مركّبة برمجيًا في `film/audio.py`، بدون عينات خارجية.
+## Limitations
 
-## الحدود · Limitations
-
-- الشبكة صغيرة جدًا والصور 16×16 فقط، فما ينجح هنا قد لا ينجح في شبكة كبيرة.
-- معدل التعلّم واحد (η = 1) لمعظم التعديلات، وبعض التعديلات الفاشلة قد تنجح بمعدل آخر.
-- ثلاث بدايات عشوائية لكل تجربة، فلا نعتبر فرقًا أقل من 2 إلى 3 نقاط حقيقيًا.
+- The network is tiny and the images are 16×16. What works here may not hold for large networks, and the reverse.
+- Most edits use a single learning rate (η = 1). Some failures might succeed at another rate.
+- Three random starts per edit catch obvious flukes, but differences under 2–3 points should not be read as real.
+- Some explanations above are proven (the swap, the symmetry); others are our best interpretation, and the text says which.
