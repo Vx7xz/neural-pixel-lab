@@ -1,0 +1,311 @@
+<title>أطلس المعادلات المكسورة</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+/* Layout: a specimen atlas. Anatomy of the original formulas up top, the seven findings as wide plates, then every specimen as a filterable card grid. */
+:root{
+  --bg:#f3f4f2; --surface:#ffffff; --sunk:#e8eae6; --ink:#15201d; --muted:#5d6a66; --line:#d5dad6;
+  --accent:#0d7566; --accent-soft:#d7eee9; --screen:#121022;
+  --v-better:#0d7a52; --v-same:#4f5e70; --v-weaker:#a86400; --v-odd:#6b4fc4; --v-fail:#c0392b;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101413; --surface:#181e1c; --sunk:#212927; --ink:#e7eeeb; --muted:#97a6a1; --line:#2c3633;
+  --accent:#4fcfb7; --accent-soft:#1c3a34; --screen:#0b0a18;
+  --v-better:#4fd39a; --v-same:#9fb0c4; --v-weaker:#f0a53a; --v-odd:#a993ff; --v-fail:#ff7a6b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101413; --surface:#181e1c; --sunk:#212927; --ink:#e7eeeb; --muted:#97a6a1; --line:#2c3633;
+  --accent:#4fcfb7; --accent-soft:#1c3a34; --screen:#0b0a18;
+  --v-better:#4fd39a; --v-same:#9fb0c4; --v-weaker:#f0a53a; --v-odd:#a993ff; --v-fail:#ff7a6b; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:48px}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.35;text-wrap:balance}
+h1{font-size:clamp(30px,5vw,48px);font-weight:700}
+h2{font-size:26px;font-weight:700}
+h3{font-size:18px;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);direction:ltr;unicode-bidi:isolate}
+bdi.mono{font-size:.92em}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{max-width:66ch;color:var(--muted);font-size:17px;margin-top:12px}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:18px}
+.facts div{display:flex;flex-direction:column}
+.facts b{font-family:var(--f-mono);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
+.facts span{font-size:13px;color:var(--muted)}
+
+/* anatomy */
+.anatomy{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px}
+.anatomy ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.anatomy li{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:baseline;padding:8px 10px;border-radius:8px;background:var(--sunk)}
+.anatomy li .k{font-size:13px;color:var(--muted)}
+.anatomy li .mono{font-size:15px;text-align:left}
+.legend{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.ramp{display:inline-flex;direction:ltr}.ramp i{width:14px;height:14px;display:inline-block}
+
+/* verdict chips */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.v-better{color:var(--v-better)}.v-same{color:var(--v-same)}.v-weaker{color:var(--v-weaker)}.v-odd{color:var(--v-odd)}.v-fail{color:var(--v-fail)}
+
+/* tiles */
+.tiles{display:flex;flex-wrap:wrap;gap:10px}
+.tile{display:flex;flex-direction:column;gap:3px;align-items:stretch;width:var(--tw,84px)}
+.tile canvas{width:100%;aspect-ratio:1;image-rendering:pixelated;background:var(--screen);border-radius:4px;display:block;max-width:100%}
+.tile .cap{display:flex;justify-content:space-between;gap:4px;font-size:11.5px;color:var(--muted)}
+.tile .cap b{font-family:var(--f-mono);font-weight:600;color:var(--ink);direction:ltr}
+.tile.target canvas{outline:1px dashed var(--line);outline-offset:2px}
+
+/* findings */
+.finding{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;padding-block:26px;border-top:1px solid var(--line)}
+.finding:first-of-type{border-top:0}
+.finding .txt{display:flex;flex-direction:column;gap:10px;min-width:0}
+.finding .txt p{max-width:62ch}
+.finding .eq{font-family:var(--f-mono);direction:ltr;text-align:left;background:var(--sunk);padding:10px 14px;border-radius:8px;font-size:14.5px;overflow-x:auto;white-space:nowrap}
+.finding .viz{display:flex;flex-direction:column;gap:14px;min-width:0}
+.rowlab{font-size:12.5px;color:var(--muted);margin-bottom:4px}
+.tag{font-size:12.5px;color:var(--accent);font-weight:600}
+
+/* atlas */
+.filters{display:flex;flex-direction:column;gap:10px}
+.fgroup{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.fgroup>span{font-size:13px;color:var(--muted);margin-inline-end:4px}
+.fbtn{border:1px solid var(--line);background:var(--surface);padding:4px 12px;border-radius:999px;font-size:13px;cursor:pointer}
+.fbtn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.ref{border-color:var(--accent)}
+.card .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.card .grp{font-size:12.5px;color:var(--muted)}
+.card .edit{font-family:var(--f-mono);direction:ltr;text-align:left;font-size:17px;font-weight:600;overflow-wrap:anywhere}
+.card .why{font-size:14px;color:var(--ink)}
+.card .stat{font-size:12.5px;color:var(--muted)}
+.card .stat b{font-family:var(--f-mono);color:var(--ink);font-weight:600;direction:ltr;unicode-bidi:isolate}
+.count{font-size:13px;color:var(--muted)}
+
+.limits{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.limits ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:14.5px}
+
+@media (max-width:820px){
+  .anatomy,.finding{grid-template-columns:1fr}
+  .anatomy li{grid-template-columns:96px minmax(0,1fr)}
+  .grid{grid-template-columns:1fr}
+}
+@media (max-width:420px){.tile{width:var(--tws,72px)}}
+</style>
+
+<div class="wrap" dir="rtl" lang="ar">
+  <header>
+    <div class="tag mono" style="text-align:right">NEURAL PIXEL LAB · ATLAS</div>
+    <h1>أطلس المعادلات المكسورة</h1>
+    <p class="lede">أخذنا شبكة عصبية صغيرة تتعلّم رسم صورة 16×16 بكسل، وغيّرنا في كل تجربة رمزًا واحدًا فقط في إحدى معادلاتها. كل تعديل جرّبناه على ثلاثة أنماط، وبثلاث بدايات عشوائية مختلفة، حتى نفرّق بين الظاهرة الحقيقية والصدفة. وأعدنا أهم النتائج على حرف R والرقم 7 لأنهما غير متماثلين.</p>
+    <div class="facts">
+      <div><b>58</b><span>تعديلًا على المعادلات</span></div>
+      <div><b>636</b><span>عملية تدريب كاملة</span></div>
+      <div><b>5</b><span>أنماط مختلفة</span></div>
+      <div><b>1000</b><span>حقبة لكل تدريب</span></div>
+    </div>
+  </header>
+
+  <section class="anatomy" aria-label="المعادلات الأصلية">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2>الشبكة الأصلية</h2>
+      <p class="muted">المدخل موقع البكسل (x, y)، والمخرج احتمال أن يكون البكسل مضاءً. طبقتان مخفيتان في كل منهما 16 عصبونًا. هذه المعادلات الخمس هي كل ما تفعله الشبكة، وكل تجربة في الأطلس تغيّر رمزًا واحدًا في واحدة منها.</p>
+      <div class="legend"><span>الألوان في الصور:</span><span class="mono">0</span><span class="ramp" id="ramp"></span><span class="mono">1</span><span>من مطفأ إلى مضاء</span></div>
+    </div>
+    <ol>
+      <li><span class="k">العصبون</span><span class="mono">z = w · x + b</span></li>
+      <li><span class="k">دالة التفعيل</span><span class="mono">a = tanh(z)</span></li>
+      <li><span class="k">إشارة الخطأ</span><span class="mono">dL/dz = p − y</span></li>
+      <li><span class="k">الانتشار العكسي</span><span class="mono">δ = (Wᵀ · δ′) ⊙ (1 − a²)</span></li>
+      <li><span class="k">قاعدة التحديث</span><span class="mono">w ← w − η · g</span></li>
+    </ol>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:6px">
+    <h2>سبعة اكتشافات</h2>
+    <p class="muted" style="max-width:66ch">النتائج التي فاجأتنا أو كشفت شيئًا عن طريقة عمل الشبكات. الأرقام تحت كل صورة هي متوسط الدقة على ثلاث بدايات عشوائية.</p>
+    <div id="findings"></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h2>كل التجارب</h2>
+      <p class="muted" style="max-width:66ch">كل بطاقة تعديل واحد. الصور الثلاث هي ما رسمته الشبكة بعد 1000 حقبة على القلب والوجه والحلقة، وتحت كل صورة متوسط الدقة. للمقارنة: الأصل يحقق 99% على القلب، و91% على الوجه، و95% على الحلقة.</p>
+    </div>
+    <div class="filters">
+      <div class="fgroup" id="fPlace"><span>المكان:</span></div>
+      <div class="fgroup" id="fVerdict"><span>النتيجة:</span></div>
+    </div>
+    <p class="count" id="count"></p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="limits">
+    <h2>حدود هذه التجارب</h2>
+    <ul>
+      <li>الشبكة صغيرة جدًا (2→16→16→1) والصور 16×16 فقط. ما ينجح هنا قد لا ينجح في شبكة كبيرة، والعكس.</li>
+      <li>استخدمنا معدل تعلّم واحدًا (η = 1) لكل التعديلات، إلا القسمة (η = 0.00001) وإشارة التدرّج المصغّرة (η = 0.01). بعض التعديلات الفاشلة قد تنجح بمعدل تعلّم آخر.</li>
+      <li>ثلاث بدايات عشوائية تكفي لكشف الصدفة الواضحة، لكنها لا تكفي لإثبات فروق صغيرة. لذلك لا نعتبر فرقًا أقل من 2 إلى 3 نقاط حقيقيًا.</li>
+      <li>التفسيرات في البطاقات هي تفسيرنا لما رأيناه. بعضها مثبت رياضيًا (مثل التبديل والتماثل)، وبعضها مرجّح فقط، وكتبنا ذلك صراحة حيث ينطبق.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const DATA=/*DATA*/null;
+const PAL=[[18,16,34],[38,28,84],[120,56,150],[255,96,140],[255,224,176]];
+const STOPS=[0,.3,.55,.78,1];
+function cmap(p){for(let i=0;i<4;i++){if(p<=STOPS[i+1]){const u=(p-STOPS[i])/(STOPS[i+1]-STOPS[i]);return PAL[i].map((v,j)=>Math.round(v+(PAL[i+1][j]-v)*u));}}return PAL[4];}
+function paint(cv,hex){const c=cv.getContext('2d'),im=c.createImageData(16,16);for(let i=0;i<256;i++){const v=parseInt(hex[i],16)/15,col=cmap(v);im.data[i*4]=col[0];im.data[i*4+1]=col[1];im.data[i*4+2]=col[2];im.data[i*4+3]=255;}c.putImageData(im,0,0);}
+const MATHRE=/([A-Za-zθδηΣ∇√∛|(][A-Za-z0-9θδηΣ∇√∛ᵀ²³′·−+=←⇒≈≡()|/⊙ .ᶻ]*[A-Za-z0-9θδηΣᵀ²³′)|ᶻ])/g;
+function bidi(s){return s.replace(MATHRE,m=>/[A-Za-zθδηΣ∇√∛]/.test(m)?`<bdi class="mono" dir="ltr">${m}</bdi>`:m);}
+const PN={heart:'القلب',smile:'الوجه',ring:'الحلقة',R:'حرف R',seven:'الرقم 7'};
+const EX={};DATA.exps.forEach(e=>EX[e.id]=e);
+function tile(hex,cap,val,opts={}){const d=document.createElement('div');d.className='tile'+(opts.target?' target':'');if(opts.w)d.style.setProperty('--tw',opts.w+'px');
+  const cv=document.createElement('canvas');cv.width=16;cv.height=16;cv.setAttribute('role','img');cv.setAttribute('aria-label',cap+(val!=null?' '+val:''));paint(cv,hex);d.appendChild(cv);
+  const c=document.createElement('div');c.className='cap';c.innerHTML=`<bdi>${cap}</bdi>${val!=null?`<b>${val}</b>`:''}`;d.appendChild(c);return d;}
+function pct(r){return Math.round(r.m)+'%';}
+(function(){const r=document.getElementById('ramp');for(let i=0;i<=8;i++){const c=cmap(i/8),e=document.createElement('i');e.style.background=`rgb(${c})`;r.appendChild(e);}})();
+
+/* ---------- verdicts + explanations ---------- */
+const VN={better:'أفضل من الأصل',same:'مثل الأصل تقريبًا',weaker:'يتعلّم لكن أضعف',odd:'مقيّد بالتماثل',fail:'يفشل'};
+const PLACE={ORIGINAL:'الأصل',UPDATE:'قاعدة التحديث',NEURON:'العصبون',ACTIVATION:'دالة التفعيل',DERIVATIVE:'المشتقة في الانتشار العكسي',BACKPROP:'المصفوفة في الانتشار العكسي',LOSS:'إشارة الخطأ'};
+const X={
+base:['same','المرجع. كل خطوة تمشي عكس اتجاه التدرّج، أي في الاتجاه الذي يقلّ فيه الخطأ. يتعلّم القلب بسهولة، والوجه والحلقة أصعب قليلًا في 1000 حقبة.'],
+u_flip:['fail','الشبكة صارت تصعد التدرّج، أي تزيد الخطأ عمدًا. أسرع طريقة لذلك أن تملأ الصورة كلها باللون الأقل وجودًا فيها. في القلب البكسلات المضاءة أقل، فأضاءت كل شيء (39%). وفي الوجه المطفأة أقل، فأطفأت كل شيء (45%).'],
+u_gsq:['fail','التربيع يحذف الإشارة، فكل خطوة صارت في اتجاه واحد مهما كان الخطأ. الأوزان تنزل باستمرار حتى تنطفئ الصورة. الدقة 61% في القلب هي نسبة البكسلات المطفأة، أي أن الشبكة لم ترسم شيئًا.'],
+u_gcube:['fail','التكعيب يحافظ على الإشارة، لكن التدرّجات هنا صغيرة جدًا (حوالي 0.001)، وتكعيبها يجعلها 0.000000001. الخطوات صارت أصغر بمليار مرة، فالشبكة متجمّدة عمليًا.'],
+u_groot:['fail','الجذر لا يعمل إلا على قيمة موجبة، فاضطررنا لأخذ |g| وضاعت الإشارة. كل الخطوات للأسفل مثل التربيع، فالشبكة تنهار إلى زاوية مضاءة واحدة.'],
+u_gcbrt:['weaker','الجذر التكعيبي يحافظ على الإشارة، ويكبّر التدرّجات الصغيرة (0.001 تصبح 0.1). لذلك يتعلّم، وهو أقل دقة قليلًا من الأصل. قارنه مع الجذر التربيعي الفاشل: الفرق الوحيد أن هذا احتفظ بالإشارة.'],
+u_sign:['weaker','نأخذ إشارة التدرّج فقط (+1 أو −1). بمعدل تعلّم 1 كل وزن يقفز خطوة كاملة في كل حقبة، فالشبكة تقترب من الشكل ثم ترتجف حوله (تذبذب حتى 10%).'],
+u_sign01:['weaker','نفس إشارة التدرّج بخطوات أصغر (0.01)، فتستقر وتتعلّم. هذه خوارزمية معروفة اسمها signSGD، وهي قريبة من فكرة Adam في تجاهل حجم التدرّج.'],
+u_gabs:['fail','القيمة المطلقة تحذف الإشارة، فالمصير نفس مصير التربيع: كل الأوزان تنزل والصورة تنطفئ.'],
+u_tanhg:['same','لا تغيير تقريبًا، لأن tanh(g) ≈ g عندما تكون g صغيرة، والتدرّجات هنا صغيرة دائمًا. نتيجة مفيدة لأنها تثبت أن التدرّجات في هذه الشبكة أصغر بكثير من 1.'],
+u_div:['fail','القسمة تقلب المنطق: التدرّج الصغير (قرب الحل) يعطي قفزة ضخمة، والكبير يعطي خطوة صغيرة. حتى بمعدل تعلّم 0.00001 تبقى النتيجة ضجيجًا.'],
+u_swap:['weaker','مثبت رياضيًا: بما أن التدرّج صغير، صار w ← g − w ≈ −w، فكل الأوزان تنقلب إشارتها في كل خطوة. الحساب يبيّن أنه كل خطوتين ينزل تدرّج L(θ) + L(−θ)، فالشبكة تتعلّم رسم القلب بالأوزان ونقيضها معًا. ينجح مع القلب (98%) ويضعف مع الأنماط الأصعب لأن هذا القيد مكلف.'],
+u_negw:['fail','هذه أخت تجربة التبديل: الأوزان أيضًا تنقلب كل خطوة، لكن الحساب يبيّن أنها كل خطوتين تصعد تدرّج L(θ) + L(−θ) بدل أن تنزله. فرق إشارة واحد بين تجربتين متشابهتين قلب النجاح إلى فشل.'],
+u_mulw:['fail','الخطوة صارت w · (1 − η·g)، أي تغييرًا نسبيًا. الوزن لا يستطيع أن يغيّر إشارته، والأوزان الصغيرة لا تتحرك تقريبًا، فالشبكة عالقة قرب نقطة البداية.'],
+u_overw:['fail','القسمة على الوزن تجعل الأوزان القريبة من الصفر تقفز قفزات ضخمة، والكبيرة شبه ثابتة. تنهار الشبكة إلى صورة فارغة.'],
+u_times:['fail','الوزن الجديد صار حاصل ضرب الوزن في η·g، وهذا رقم صغير جدًا. بعد خطوة واحدة تقترب كل الأوزان من الصفر، فالشبكة تُمسح حرفيًا.'],
+u_half:['fail','كل خطوة تنسى الشبكة نصف ما تعرفه. التدرّج لا يكفي لتعويض هذا النسيان، فتبقى الأوزان قرب الصفر وتنطفئ الصورة.'],
+u_double:['fail','كل خطوة تضاعف الأوزان، فتنفجر خلال عشرات الخطوات وتتشبع كل العصبونات.'],
+u_wsq:['fail','الأوزان الأصغر من 1 تذوب نحو الصفر، والأكبر من 1 تنفجر، والأوزان السالبة تنقلب موجبة. النتيجة صورة فارغة.'],
+n_plus:['fail','بدون ضرب لا يتفاعل الوزن مع المدخل: Σ(w + x) = Σw + x + y. كل عصبونات الطبقة الأولى ترى نفس الرقم x + y مع إزاحة مختلفة، فلا تستطيع الشبكة إلا رسم خطوط مائلة.'],
+n_minus:['fail','نتيجة شبه مطابقة لتجربة w + x، لأن Σ(w − x) = Σw − (x + y). الإشارة لا تغيّر شيئًا، المهم أن الضرب اختفى.'],
+n_xsq:['odd','مثبت رياضيًا: x² لا تفرّق بين x و−x، فالشبكة صارت عمياء عن اليمين واليسار، وعن الأعلى والأسفل. الحلقة متماثلة من كل الجهات، فتتعلّمها بنسبة 100% في 35 حقبة تقريبًا، أسرع من الأصل بأكثر من 20 مرة. أما القلب فيتوقف عند 83% بالضبط، وحرف R يتحوّل إلى فراشة متماثلة.'],
+n_xcube:['weaker','x³ تحافظ على الإشارة، لكنها تسحق المنطقة القريبة من المركز (0.3³ = 0.027). وسط الصورة يصبح شبه متطابق للشبكة، فالتعلّم بطيء وغير مستقر.'],
+n_xabs:['odd','نفس قيد التماثل في x² لأن |−x| = |x|. الحلقة 100% والقلب يتوقف عند 83%. أبطأ من x² لأن |x| لها زاوية حادة عند الصفر.'],
+n_xsin:['weaker','sin(3x) تحوّل الموقع إلى موجة. تتعلّم جزئيًا (حوالي 80%)، لكن الموجة تتكرر فتختلط على الشبكة مواقع متباعدة لها نفس القيمة.'],
+n_wsq:['weaker','w² لا يمكن أن تكون سالبة، فالعصبونات في الطبقات المخفية لا تستطيع أن تطرح مدخلًا من آخر. تفقد الشبكة نصف أدواتها، فتتعلّم جزئيًا.'],
+n_wabs:['weaker','|w| مثل w²: أوزان موجبة فقط في الطبقات المخفية. أفضل قليلًا من w² لأن تدرّجها لا يختفي قرب الصفر.'],
+n_wxsq:['odd','(w · x)² = w² · x²، أي أنها رياضيًا تجربة x² نفسها مع أوزان موجبة. لذلك النتائج شبه متطابقة: الحلقة 100% في 40 حقبة تقريبًا، والقلب 83%.'],
+n_dist:['weaker','العصبون صار يقيس المسافة بين المدخل ونقطة w، فيضيء حول بقعة معيّنة مثل مصباح مسلّط. يتعلّم القلب أحيانًا بسرعة، لكنه حسّاس للبداية العشوائية (84% إلى 98%).'],
+n_timesb:['fail','بضرب الانحياز بدل جمعه، كل عصبون في الطبقة الأولى يعطي صفرًا في مركز الصورة مهما تعلّم. كل الحدود التي ترسمها الشبكة تمر بالمركز، فالحلقة مستحيلة والقلب ناقص.'],
+n_paren:['weaker','w · (x + b) = w·x + w·b: الانحياز صار مربوطًا بالوزن، فتغيير أحدهما يغيّر الآخر. يتعلّم، لكن أبطأ لأن كل وزن صار يخدم وظيفتين.'],
+a_linear:['fail','بدون انحناء تنهار الطبقات كلها إلى معادلة خطية واحدة، أي سطح مائل. لا يمكن رسم أي شكل مغلق بخط مستقيم.'],
+a_sq:['fail','z² دالة زوجية لا تفرّق بين السالب والموجب، وتنمو بلا حد، فتتضخم القيم عبر الطبقات. أحيانًا تنجح وأحيانًا تنهار حسب البداية العشوائية (من 39% إلى 87%).'],
+a_cube:['fail','z³ تضخم القيم الكبيرة تكعيبيًا وتسحق الصغيرة. الإشارة تنفجر أو تختفي عبر الطبقات، فتفشل في الأنماط الثلاثة.'],
+a_abs:['weaker','|z| تشبه ReLU مطويّة على نفسها، فتعطي حوافًا حادة. تعمل جيدًا مع القلب (93% إلى 95%)، وأقل مع الوجه والحلقة.'],
+a_sin:['weaker','sin تعطي كل عصبون شكل موجة. القلب 100% في كل البدايات، لكن الحلقة متقلبة (65% إلى 96%).'],
+a_cos:['better','أفضل نتيجة في الأطلس كله: 100% على الأنماط الخمسة، وفي كل البدايات العشوائية. فحصنا أن السبب ليس تماثل الأنماط، فقد نجح على حرف R والرقم 7. وفحصنا معدلات تعلّم أخرى، وبقي أسرع من الأصل. تفسيرنا المرجّح: كل عصبون في الطبقة الأولى يصير موجة عبر الصورة (مثل تحليل فورييه)، ومشتقة cos لا تختفي عند القيم الكبيرة كما تختفي مشتقة tanh.'],
+a_relu:['better','ReLU هي الدالة الأشهر في التعلّم العميق اليوم، وهنا أيضًا من الأسرع: تصل إلى 95% في القلب خلال 34 إلى 167 حقبة، والحلقة 100%. تقسم الصورة إلى مناطق مستقيمة الحواف.'],
+a_step:['fail','مشتقة sign(z) صفر في كل مكان، فالتدرّج لا يمر عبر الطبقات المخفية أبدًا. طبقة المخرج وحدها تتعلّم من ميزات عشوائية ثابتة.'],
+a_tanh2:['same','tanh(z)² دالة زوجية تشبه الوادي. أسرع من الأصل على القلب (حوالي 70 حقبة)، ونجحت على R و7، لكنها أقل قليلًا على الوجه والحلقة. المحصلة قريبة من الأصل.'],
+a_tanhz2:['same','tanh(z²) أيضًا زوجية. من أسرع النتائج على القلب والحلقة (حوالي 55 حقبة إلى 95%)، لكن الدقة النهائية على الوجه أقل من الأصل.'],
+a_bump:['weaker','1/(1 + z²) جرس: كل عصبون يضيء في شريط ضيق فقط. جيد مع القلب، ومتقلب مع الحلقة.'],
+a_exp:['fail','eᶻ تنفجر للقيم الموجبة وتختفي للسالبة، فتتشبع الطبقات ويتجمّد المخرج على لون واحد.'],
+d_onePlus:['fail','المشتقة الحقيقية 1 − a² تقول للعصبون المشبع "توقف عن التغيّر". النسخة 1 + a² تقول العكس: كلما تشبّع زادت خطوته. فتتضخم الأوزان وتنهار الشبكة.'],
+d_asq:['fail','a² مقلوبة تمامًا: العصبون الهادئ (قرب الصفر) لا يتعلّم، والمشبع يتعلّم بأقصى قوة. عكس ما تحتاجه الشبكة.'],
+d_oneMinusA:['weaker','1 − a قريبة من الحقيقة للقيم الموجبة، لكنها خاطئة للسالبة (تصل إلى 2). نصف المعلومة صحيح، فالنتيجة جزئية (حوالي 75%).'],
+d_one:['fail','حذف المشتقة كليًا: الإشارة الراجعة لا تعرف أي العصبونات مشبعة وأيها نشطة، فتدفع الجميع بنفس القوة. تفشل غالبًا.'],
+d_sq:['same','(1 − a²)² تخنق التعلّم في العصبونات المشبعة أكثر من الأصل. النتيجة مثل الأصل أو أفضل قليلًا: القلب 100% في كل البدايات. تفسيرنا المرجّح أنها تثبّت العصبونات التي حسمت قرارها وتترك الباقي يتعلّم.'],
+d_neg:['fail','قلب إشارة المشتقة يجعل الطبقات المخفية تصعد الخطأ بينما طبقة المخرج تنزله. ولاحظ أن الأرقام مطابقة حرفيًا لتجربة −Wᵀ، لأن الاثنين يقلبان نفس الإشارة الراجعة رياضيًا.'],
+b_B:['weaker','مصفوفة عشوائية ثابتة بدل الأوزان في طريق الرجوع، ومع ذلك تتعلّم (95% إلى 97% على القلب). الظاهرة معروفة باسم محاذاة التغذية الراجعة: الأوزان الأمامية تتأقلم حتى تصير الإشارة العشوائية مفيدة. لكنها أضعف بوضوح مع حرف R (حوالي 72%).'],
+b_signW:['better','نرسل إشارة الوزن فقط (+1 أو −1) بدل قيمته في طريق الرجوع، والنتيجة مثل الأصل أو أفضل في الأنماط الخمسة كلها: الحلقة 100% مقابل 95% للأصل. معروفة في الأبحاث باسم sign symmetry، وهي مثيرة لأن الدماغ لا يستطيع على الأرجح نقل قيم الأوزان بدقة إلى الخلف.'],
+b_absW:['weaker','|W| تحذف الإشارة من طريق الرجوع، ومع ذلك يتعلّم القلب (96% إلى 100%). طبقة المخرج تتلقى التدرّج الصحيح، والطبقات المخفية تتأقلم كما في محاذاة التغذية الراجعة. أضعف مع الحلقة.'],
+b_W2:['weaker','W² موجبة دائمًا مثل |W|، فالنتيجة مشابهة: القلب جيد والحلقة أضعف.'],
+b_negW:['fail','−Wᵀ يقلب كل الإشارة الراجعة، فالطبقات المخفية تتعلّم عكس المطلوب. الأرقام مطابقة لتجربة −(1 − a²) لأنهما نفس العملية رياضيًا.'],
+l_cube:['weaker','(p − y)³ تحافظ على الإشارة لكنها تهمل الأخطاء الصغيرة: خطأ 0.1 يصير 0.001. تتعلّم الخطوط العريضة للقلب ببطء، وتهمل التفاصيل (الحلقة 71%).'],
+l_sign:['fail','sign(p − y) لا تصل إلى الصفر أبدًا، فحتى البكسلات الصحيحة تدفع بكامل قوتها. البكسلات المطفأة أكثر عددًا فتنتصر بالتصويت، والنتيجة صورة فارغة.'],
+l_sq:['fail','(p − y)² موجبة دائمًا، فكل البكسلات تدفع المخرج في اتجاه واحد نحو الإطفاء. صورة فارغة.'],
+l_ratio:['fail','(p − y)/(p(1 − p)) هي مشتقة الخسارة بالنسبة للاحتمال p، أي أننا نسينا ضربها في مشتقة sigmoid. تنفجر كلما اقترب p من 0 أو 1، فتتذبذب الشبكة بعنف.'],
+};
+
+/* ---------- findings ---------- */
+const F=[
+ {tag:'دالة التفعيل',h:'cos تتفوّق على الأصل في كل شيء',
+  p:['استبدال tanh(z) بـ cos(z) أعطى 100% على الأنماط الخمسة، وفي كل البدايات العشوائية الثلاث. الأصل لم يصل إلى 100% في الوجه، ولا في حرف R.','شككنا أن السبب تماثل الأنماط، لأن cos دالة زوجية والقلب والوجه والحلقة متماثلة. فجرّبناها على R و7 غير المتماثلين، وبقيت 100%. وجرّبنا معدلات تعلّم 0.3 و3، وبقيت أسرع من الأصل.'],
+  eq:'a = tanh(z)  →  a = cos(z)',
+  rows:[['الأصل',['base',['heart','smile','ring','R','seven']]],['cos',['a_cos',['heart','smile','ring','R','seven']]]]},
+ {tag:'العصبون',h:'x² تُعمي الشبكة عن الاتجاهات',
+  p:['تربيع المدخل يجعل x و−x نفس الرقم، فالشبكة لا تعرف اليمين من اليسار، ولا الأعلى من الأسفل. كل ما ترسمه يصير متماثلًا في الاتجاهين.','النتيجة سلاح ذو حدين: الحلقة متماثلة أصلًا فتتعلّمها في 35 حقبة تقريبًا (الأصل يحتاج أكثر من 800)، بينما حرف R يتحوّل إلى فراشة، والرقم 7 يتحوّل إلى ساعة رملية.'],
+  eq:'z = w · x + b  →  z = w · x² + b',
+  rows:[['المطلوب',['@target',['ring','heart','R','seven']]],['x²',['n_xsq',['ring','heart','R','seven']]]]},
+ {tag:'قاعدة التحديث',h:'تبديل w وg ينجح، ولسبب أنيق',
+  p:['بعد التبديل صارت القاعدة w ← g − w. التدرّج صغير جدًا، فعمليًا w ← −w: كل الأوزان تنقلب إشارتها في كل خطوة. قسنا ذلك مباشرة، فوجدنا التشابه بين أوزان خطوتين متتاليتين −1.000 في الطبقات الثلاث.','ولو حسبنا خطوتين معًا، نجد أن الشبكة تنزل تدرّج L(θ) + L(−θ). أي أنها تتعلّم رسم القلب بالأوزان ونقيضها في الوقت نفسه. والتجربة الأخت −w − η·g تصعد نفس الدالة بدل أن تنزلها، ففشلت تمامًا.'],
+  eq:'w ← g − w   ⇒   every 2 steps:  w ← w − ∇[L(θ) + L(−θ)]',
+  rows:[['w ⇄ g',['u_swap',['heart','smile','ring']]],['−w − η·g',['u_negw',['heart','smile','ring']]]]},
+ {tag:'قاعدة التحديث',h:'الإشارة أهم من المقدار',
+  p:['خمسة تعديلات على g في قاعدة التحديث، والقاعدة واحدة: ما يحافظ على إشارة التدرّج يتعلّم، وما يحذفها يفشل. الجذر التكعيبي يحافظ على الإشارة فنجح. الجذر التربيعي والتربيع والقيمة المطلقة تحذفها ففشلت.','الاستثناء g³: يحافظ على الإشارة لكنه فشل، لأن التدرّجات حوالي 0.001 وتكعيبها يجعل الخطوات أصغر بمليار مرة. وtanh(g) لم يغيّر شيئًا، لأن tanh(g) ≈ g للقيم الصغيرة.'],
+  eq:'g  →  ∛g ✓   √|g| ✗   g² ✗   |g| ✗   g³ ✗   tanh(g) =',
+  rows:[['',['u_gcbrt|∛g','u_tanhg|tanh(g)','u_groot|√|g|','u_gsq|g²','u_gcube|g³',['heart']]]]},
+ {tag:'الانتشار العكسي',h:'الانتشار العكسي لا يحتاج الأوزان بدقة',
+  p:['في طريق الرجوع، تحمل الإشارة عبر المصفوفة Wᵀ. استبدلناها بإشارات الأوزان فقط sign(W)، فكانت النتيجة مثل الأصل أو أفضل في الأنماط الخمسة كلها.','وحتى مصفوفة عشوائية تمامًا، أو |W| بلا إشارة، تعلّمت القلب. ما لا يُحتمل هو قلب الاتجاه: −Wᵀ فشلت. هذا مثير لأبحاث الدماغ، لأن الخلايا العصبية لا تستطيع على الأرجح إرسال قيم الأوزان بدقة إلى الخلف.'],
+  eq:'δ = (Wᵀ · δ′) ⊙ f′   →   sign(W)ᵀ ✓   random B ✓   |W|ᵀ ✓   −Wᵀ ✗',
+  rows:[['',['base|الأصل','b_signW|sign(W)','b_B|B عشوائية','b_absW||W|','b_negW|−W',['ring']]]]},
+ {tag:'هويات رياضية',h:'تعديلات مختلفة، نتائج متطابقة',
+  p:['بعض التعديلات تبدو مختلفة لكنها نفس العملية رياضيًا، والتجارب أكّدت ذلك بأرقام متطابقة حتى الخانة الأخيرة.','−(1 − a²) في المشتقة و−Wᵀ في المصفوفة كلاهما يقلب إشارة δ. وw + x وw − x كلاهما يحذف الضرب. و(w · x)² تساوي w² · x²، فتتصرّف مثل x².'],
+  eq:'−(1−a²) ≡ −Wᵀ      Σ(w+x) ≈ Σ(w−x)      (w·x)² = w²·x²',
+  rows:[['',['d_neg|−(1−a²)','b_negW|−Wᵀ','n_plus|w+x','n_minus|w−x','n_xsq|x²','n_wxsq|(w·x)²',['heart']]]]},
+ {tag:'كيف تقرأ الأرقام',h:'39% و61% تعني أن الشبكة لم ترسم شيئًا',
+  p:['في القلب، 39% من البكسلات مضاءة و61% مطفأة. فإذا رأيت دقة 39% بالضبط فالشبكة أضاءت كل شيء، وإذا رأيت 61% فالشبكة أطفأت كل شيء.','هذا يكشف ما فعلته التعديلات الفاشلة. قلب الإشارة يملأ الصورة باللون الأقل وجودًا فيها حتى يكون مخطئًا في أكبر عدد من البكسلات، وفي القلب هذا اللون هو المضاء. أما التربيع والقيمة المطلقة وتربيع إشارة الخطأ ونسيان نصف الوزن فتطفئ كل شيء لأنها تدفع في اتجاه واحد.'],
+  eq:'39% = all pixels on      61% = all pixels off',
+  rows:[['',['u_flip|− → +','u_gsq|g²','u_gabs||g|','l_sq|(p−y)²','u_half|w/2',['heart']]]]},
+];
+function renderFindings(){const host=document.getElementById('findings');
+  F.forEach(f=>{const s=document.createElement('article');s.className='finding';
+    const t=document.createElement('div');t.className='txt';t.innerHTML=`<span class="tag">${f.tag}</span><h3>${f.h}</h3>${f.p.map(x=>`<p>${bidi(x)}</p>`).join('')}<div class="eq">${f.eq}</div>`;
+    const v=document.createElement('div');v.className='viz';
+    f.rows.forEach(([lab,spec])=>{const wrap=document.createElement('div');if(lab){const l=document.createElement('div');l.className='rowlab';l.textContent=lab;wrap.appendChild(l);}
+      const tl=document.createElement('div');tl.className='tiles';
+      const pats=spec[spec.length-1],ids=spec.slice(0,-1);
+      if(ids.length===1&&!ids[0].includes('|')){const id=ids[0];
+        pats.forEach(p=>{if(id==='@target')tl.appendChild(tile(DATA.targets[p],PN[p],null,{target:true}));else{const r=EX[id].r[p];tl.appendChild(tile(r.g,PN[p],pct(r)));}});}
+      else{const p=pats[0];ids.forEach(s=>{const [id,name]=s.split(/\|(.+)/);const r=EX[id].r[p];tl.appendChild(tile(r.g,name,pct(r)));});}
+      wrap.appendChild(tl);v.appendChild(wrap);});
+    s.appendChild(t);s.appendChild(v);host.appendChild(s);});}
+
+/* ---------- atlas ---------- */
+let fPlace='all',fVerdict='all';
+function renderFilters(){
+  const places=['all',...Object.keys(PLACE).filter(k=>k!=='ORIGINAL')],verdicts=['all','better','same','weaker','odd','fail'];
+  const mk=(host,list,get,set,name)=>{list.forEach(k=>{const b=document.createElement('button');b.type='button';b.className='fbtn';b.id='f-'+host.id+'-'+k;b.textContent=k==='all'?'الكل':name(k);
+    b.setAttribute('aria-pressed',get()===k?'true':'false');b.addEventListener('click',()=>{set(k);host.querySelectorAll('.fbtn').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));renderGrid();});host.appendChild(b);});};
+  mk(document.getElementById('fPlace'),places,()=>fPlace,v=>fPlace=v,k=>PLACE[k]);
+  mk(document.getElementById('fVerdict'),verdicts,()=>fVerdict,v=>fVerdict=v,k=>VN[k]);
+}
+function renderGrid(){const g=document.getElementById('grid');g.innerHTML='';let n=0;
+  DATA.exps.forEach(e=>{const [v,why]=X[e.id]||['same',''];
+    if(fPlace!=='all'&&e.grp!==fPlace&&!(e.grp==='ORIGINAL'))return;if(fVerdict!=='all'&&v!==fVerdict&&e.grp!=='ORIGINAL')return;n++;
+    const c=document.createElement('article');c.className='card'+(e.grp==='ORIGINAL'?' ref':'');
+    const avg=(e.r.heart.m+e.r.smile.m+e.r.ring.m)/3,base=DATA.exps[0].r,bavg=(base.heart.m+base.smile.m+base.ring.m)/3,d=avg-bavg;
+    c.innerHTML=`<div class="top"><span class="grp">${PLACE[e.grp]}</span>${e.grp==='ORIGINAL'?'<span class="chip v-same">نقطة المقارنة</span>':`<span class="chip v-${v}">${VN[v]}</span>`}</div>
+      <div class="edit">${e.label}</div>`;
+    const tl=document.createElement('div');tl.className='tiles';
+    ['heart','smile','ring'].forEach(p=>{const r=e.r[p];tl.appendChild(tile(r.g,PN[p],pct(r),{w:92}));});c.appendChild(tl);
+    const st=document.createElement('p');st.className='stat';
+    const extra=e.r.R?` · R <b>${pct(e.r.R)}</b> · 7 <b>${pct(e.r.seven)}</b>`:'';
+    st.innerHTML=e.grp==='ORIGINAL'?`المتوسط <b>${avg.toFixed(0)}%</b>${extra}`:`المتوسط <b>${avg.toFixed(0)}%</b> · عن الأصل <b>${d>=0?'+':''}${d.toFixed(0)}</b> نقطة${extra}`;
+    c.appendChild(st);const w=document.createElement('p');w.className='why';w.innerHTML=bidi(why);c.appendChild(w);g.appendChild(c);});
+  document.getElementById('count').textContent=`يعرض ${n} من ${DATA.exps.length} تجربة`;}
+renderFindings();renderFilters();renderGrid();
+</script>

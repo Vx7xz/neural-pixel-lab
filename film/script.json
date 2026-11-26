@@ -1,0 +1,149 @@
+[
+ {
+  "id": "intro",
+  "en": [
+   "A neural network runs on two tiny formulas.",
+   "One to think. One to learn.",
+   "Let's rewrite them, one symbol at a time."
+  ],
+  "ar": [
+   "الشبكة العصبية تعمل بمعادلتين صغيرتين.",
+   "واحدة لتفكّر، وواحدة لتتعلّم.",
+   "لنُعِد كتابتهما، رمزًا رمزًا."
+  ]
+ },
+ {
+  "id": "normal",
+  "en": [
+   "The original. Weight, minus eta, times gradient.",
+   "The heart appears."
+  ],
+  "ar": [
+   "الأصل: الوزن، ناقص إيتا، ضرب التدرّج.",
+   "ويظهر القلب."
+  ]
+ },
+ {
+  "id": "flip",
+  "en": [
+   "Change minus to plus.",
+   "It runs toward the error, and floods everything."
+  ],
+  "ar": [
+   "نغيّر الناقص إلى زائد.",
+   "تركض نحو الخطأ، وتُغرق كل شيء."
+  ]
+ },
+ {
+  "id": "gsq",
+  "en": [
+   "Square the gradient.",
+   "The sign is gone. It only knows how to push down."
+  ],
+  "ar": [
+   "نربّع التدرّج.",
+   "ضاعت الإشارة، فلا تعرف إلا الدفع للأسفل."
+  ]
+ },
+ {
+  "id": "groot",
+  "en": [
+   "Take the square root instead.",
+   "Same problem. Everything slides into one corner."
+  ],
+  "ar": [
+   "نأخذ الجذر التربيعي بدلًا منه.",
+   "نفس المشكلة: كل شيء ينزلق إلى زاوية واحدة."
+  ]
+ },
+ {
+  "id": "div",
+  "en": [
+   "Divide, instead of multiply.",
+   "Tiny gradients become giant steps. Pure noise."
+  ],
+  "ar": [
+   "نقسم بدل أن نضرب.",
+   "التدرّجات الصغيرة تصير قفزات عملاقة. ضجيج خالص."
+  ]
+ },
+ {
+  "id": "swap",
+  "en": [
+   "Now swap the weight and the gradient.",
+   "This should be nonsense. But it still draws the heart."
+  ],
+  "ar": [
+   "الآن نبدّل مكان الوزن والتدرّج.",
+   "يفترض أن تكون بلا معنى، لكنها ما زالت ترسم القلب."
+  ]
+ },
+ {
+  "id": "plus",
+  "en": [
+   "Inside the neuron, turn times into plus.",
+   "The inputs stop mixing. Only diagonal lines."
+  ],
+  "ar": [
+   "داخل العصبون، نحوّل الضرب إلى جمع.",
+   "المدخلات لم تعد تتفاعل، فلا يبقى إلا خطوط مائلة."
+  ]
+ },
+ {
+  "id": "xsq",
+  "en": [
+   "Square the input.",
+   "Left and right become the same. The heart melts into a round blob."
+  ],
+  "ar": [
+   "نربّع المدخل.",
+   "اليمين واليسار صارا متساويين، فيذوب القلب إلى كتلة مستديرة."
+  ]
+ },
+ {
+  "id": "wsq",
+  "en": [
+   "Square the weights instead.",
+   "Every weight turns positive. Only stripes are left."
+  ],
+  "ar": [
+   "نربّع الأوزان بدلًا من ذلك.",
+   "كل الأوزان تصير موجبة، فلا يبقى إلا أشرطة."
+  ]
+ },
+ {
+  "id": "timesb",
+  "en": [
+   "Multiply by the bias, instead of adding it.",
+   "The picture folds into mirrored bands."
+  ],
+  "ar": [
+   "نضرب في الانحياز بدل أن نجمعه.",
+   "تنطوي الصورة إلى أشرطة متماثلة."
+  ]
+ },
+ {
+  "id": "abs",
+  "en": [
+   "Last one. Replace tanh with absolute value.",
+   "Sharp corners, but still a heart."
+  ],
+  "ar": [
+   "الأخيرة: نستبدل tanh بالقيمة المطلقة.",
+   "زوايا حادة، لكنه ما زال قلبًا."
+  ]
+ },
+ {
+  "id": "outro",
+  "en": [
+   "Ten edits. One symbol each.",
+   "Algorithms aren't magic.",
+   "They're formulas, and you can play with them."
+  ],
+  "ar": [
+   "عشرة تعديلات، رمز واحد في كل مرة.",
+   "الخوارزميات ليست سحرًا.",
+   "إنها معادلات، وتستطيع أن تلعب بها."
+  ]
+ }
+]

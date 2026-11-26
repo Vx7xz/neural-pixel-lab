@@ -1,0 +1,432 @@
+<!doctype html><html lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style></head><body>
+<title>مختبر البكسل العصبي</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&family=Silkscreen&display=swap">
+<style>
+/* Layout: an RTL lab bench. Target pattern and controls on top, then 12 identical "specimen" cards (one changed algorithm each), then a ranked comparison. */
+:root{
+  --bg:#f2f1f7; --surface:#ffffff; --surface-2:#e9e7f2; --ink:#1d1b2e; --muted:#67637d; --line:#d9d6e5;
+  --accent:#5a48d4; --accent-soft:#e6e2ff; --good:#23865a; --bad:#c8402f;
+  --screen:#14122a;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  --f-pixel:"Silkscreen","Courier New",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12111b; --surface:#1b1a28; --surface-2:#252336; --ink:#ecebf6; --muted:#9d99b6; --line:#2f2c44;
+  --accent:#a196ff; --accent-soft:#2c2754; --good:#4cc68d; --bad:#ff7a66; --screen:#0b0a18; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12111b; --surface:#1b1a28; --surface-2:#252336; --ink:#ecebf6; --muted:#9d99b6; --line:#2f2c44;
+  --accent:#a196ff; --accent-soft:#2c2754; --good:#4cc68d; --bad:#ff7a66; --screen:#0b0a18; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:clamp(28px,4.4vw,42px);font-weight:700}
+h2{font-size:24px;font-weight:700}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+.pix{font-family:var(--f-pixel);letter-spacing:.04em;direction:ltr;unicode-bidi:isolate}
+.muted{color:var(--muted)}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+header{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:end}
+header .lede{max-width:62ch;color:var(--muted);margin-top:10px;font-size:16px}
+.eyebrow{font-family:var(--f-pixel);font-size:11px;letter-spacing:.12em;color:var(--accent);direction:ltr;text-align:right}
+.arch{display:flex;align-items:center;gap:8px;flex-wrap:wrap;direction:ltr;justify-content:flex-end}
+.arch .node{background:var(--surface);border:1px solid var(--line);padding:6px 10px;border-radius:4px;font-family:var(--f-pixel);font-size:12px;text-align:center}
+.arch .node small{display:block;font-family:var(--f-body);font-size:11px;color:var(--muted);letter-spacing:0}
+.arch .arr{color:var(--muted);font-family:var(--f-pixel)}
+
+/* bench */
+.bench{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px}
+.target{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+#editor{width:224px;height:224px;image-rendering:pixelated;cursor:crosshair;border-radius:4px;touch-action:none;background:var(--screen);max-width:100%}
+.presets{display:flex;flex-wrap:wrap;gap:6px;max-width:240px}
+.chipbtn{border:1px solid var(--line);background:var(--surface-2);padding:4px 10px;border-radius:999px;font-size:13px;cursor:pointer}
+.chipbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.controls{display:flex;flex-direction:column;gap:16px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface-2);padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.field{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+select{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.epoch{display:flex;align-items:baseline;gap:10px}
+.epoch .big{font-family:var(--f-pixel);font-size:34px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar{height:8px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--accent)}
+.legend{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.legend b{width:16px;height:16px;display:inline-block}
+.how{font-size:14px;color:var(--muted);max-width:68ch}
+
+/* specimen grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card.ref{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.card .cat{font-size:12px;color:var(--accent);font-weight:600}
+.card .chg{font-size:12px;color:var(--muted);direction:ltr;text-align:right;font-family:var(--f-pixel);letter-spacing:.02em}
+.screen{width:100%;aspect-ratio:1;image-rendering:pixelated;border-radius:4px;background:var(--screen);display:block;max-width:100%}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stat{background:var(--surface-2);border-radius:4px;padding:5px 7px;min-width:0}
+.stat span{display:block;font-size:11px;color:var(--muted)}
+.stat b{font-family:var(--f-pixel);font-weight:400;font-size:14px;font-variant-numeric:tabular-nums;direction:ltr;display:block;text-align:right}
+.spark{width:100%;height:40px;display:block}
+.film{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;direction:ltr}
+.film figure{margin:0;display:flex;flex-direction:column;gap:2px;align-items:center}
+.film canvas{width:100%;aspect-ratio:1;image-rendering:pixelated;background:var(--screen);border-radius:2px;opacity:.25}
+.film canvas.on{opacity:1}
+.film figcaption{font-family:var(--f-pixel);font-size:9px;color:var(--muted)}
+.why{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.status{font-size:12px;font-weight:600}
+.status.good{color:var(--good)} .status.bad{color:var(--bad)}
+
+/* comparison */
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th,td{padding:9px 14px;text-align:right;border-bottom:1px solid var(--line);font-size:14px}
+th{font-size:12px;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-pixel);font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
+.accbar{display:flex;align-items:center;gap:8px;direction:ltr}
+.accbar i{display:block;height:10px;background:var(--accent);border-radius:1px}
+.accbar span{font-family:var(--f-pixel);font-size:12px;min-width:40px}
+tr.refrow td{background:var(--accent-soft)}
+td canvas{width:32px;height:32px;image-rendering:pixelated;background:var(--screen);border-radius:2px;display:block}
+
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.note p{font-size:14px;color:var(--muted)}
+footer{font-size:13px;color:var(--muted)}
+
+@media (max-width:760px){
+  header{grid-template-columns:1fr}
+  .arch{justify-content:flex-start}
+  .bench{grid-template-columns:1fr}
+  .target{align-items:stretch}
+  #editor{width:100%;height:auto;aspect-ratio:1;max-width:320px}
+  .presets{max-width:none}
+}
+</style>
+
+<div class="wrap" dir="rtl" lang="ar">
+  <header>
+    <div>
+      <div class="eyebrow">NEURAL PIXEL LAB · EXP-01</div>
+      <h1>مختبر البكسل العصبي</h1>
+      <p class="lede">شبكة عصبية عادية تتعلّم رسم صورة بكسل بحجم 16×16. تأخذ الشبكة موقع كل بكسل وتتوقّع سطوعه. ندرّب 12 نسخة من الشبكة في الوقت نفسه. كل نسخة تختلف عن المرجع في خوارزمية واحدة فقط، ثم نقارن ما رسمته كل نسخة.</p>
+    </div>
+    <div class="arch" aria-label="بنية الشبكة">
+      <div class="node">x, y<small>موقع البكسل</small></div><span class="arr">→</span>
+      <div class="node">16<small>طبقة مخفية</small></div><span class="arr">→</span>
+      <div class="node">16<small>طبقة مخفية</small></div><span class="arr">→</span>
+      <div class="node">1<small>السطوع</small></div>
+    </div>
+  </header>
+
+  <section class="bench" aria-label="لوحة التحكم">
+    <div class="target">
+      <h3>النمط المطلوب</h3>
+      <canvas id="editor" width="16" height="16" aria-label="محرر النمط، اضغط واسحب للرسم"></canvas>
+      <div class="presets" id="presets"></div>
+      <p class="muted" style="font-size:12px">ارسم بالضغط والسحب. يبدأ التدريب من جديد عند كل تعديل.</p>
+    </div>
+    <div class="controls">
+      <div class="epoch"><span class="muted">الحقبة (Epoch)</span><span class="big" id="epoch">0</span><span class="muted pix" id="epochMax">/ 1500</span></div>
+      <div class="bar"><i id="prog"></i></div>
+      <div class="row">
+        <button class="btn primary" id="play">إيقاف مؤقت</button>
+        <button class="btn" id="reset">إعادة التدريب</button>
+        <label class="field" for="speed">السرعة
+          <select id="speed"><option value="4">بطيئة</option><option value="12" selected>عادية</option><option value="30">سريعة</option></select>
+        </label>
+        <label class="field" for="errs"><input type="checkbox" id="errs"> إظهار البكسلات الخاطئة</label>
+      </div>
+      <div class="row legend" aria-label="مفتاح الألوان">
+        <span>ثقة الشبكة أن البكسل مضاء:</span>
+        <span class="pix">0</span><b style="background:#1a1830"></b><b style="background:#3a2e6a"></b><b style="background:#7c4f9f"></b><b style="background:#e0739a"></b><b style="background:#ffd8a8"></b><span class="pix">1</span>
+      </div>
+      <p class="how">كل النسخ تبدأ من نفس الأوزان العشوائية (البذرة نفسها)، وتتدرّب على نفس البكسلات الـ256 بالدفعة الكاملة، بدالة خسارة Binary Cross-Entropy. لذلك أي فرق تراه في الصور سببه الخوارزمية المعدّلة وحدها. المرجع: مُحسِّن Adam، تفعيل tanh، معدل تعلّم 0.01، تهيئة Xavier.</p>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <h2>العيّنات الاثنتا عشرة</h2>
+    <p class="muted" style="max-width:68ch">الشريط أسفل كل صورة يحفظ لقطة عند الحقب 0 و50 و200 و600 و1500، فتقدر تقارن سرعة التعلّم بين النسخ. الخط البياني يرسم الخسارة (Loss) بمقياس لوغاريتمي.</p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <h2>لوحة المقارنة</h2>
+    <p class="muted">مرتّبة حسب الدقة الحالية، ثم حسب أسرع وصول إلى دقة 95%. تتحدّث مباشرة أثناء التدريب.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>الصورة</th><th>النسخة</th><th>الدقة</th><th>الخسارة</th><th>وصلت 95% عند</th><th>مقارنة بالمرجع</th></tr></thead>
+        <tbody id="board"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <h2>ماذا تعلّمنا</h2>
+    <div class="notes">
+      <div class="note"><h3>المُحسِّن يحدّد السرعة</h3><p>Adam وRMSProp يضبطان خطوة كل وزن على حدة، فيصلان للشكل أسرع. SGD العادي يحتاج حقبًا أكثر بكثير، والزخم (Momentum) يسرّعه لأنه يراكم الاتجاه.</p></div>
+      <div class="note"><h3>دالة التفعيل تحدّد شكل الحدود</h3><p>ReLU تقطّع المساحة إلى مناطق مستقيمة، فتظهر حواف حادة وزوايا. tanh تعطي منحنيات ناعمة. Sigmoid أبطأ لأن مشتقتها صغيرة (أقصاها 0.25)، فيضعف التدرّج كلما رجع للخلف.</p></div>
+      <div class="note"><h3>معدل التعلّم سيف بحدّين</h3><p>المعدل العالي جدًا يقفز فوق الحل، فترى الصورة ترتجف أو تنهار بعد أن تقترب. المعدل المنخفض جدًا آمن، لكن الصورة تبقى ضبابية لمئات الحقب.</p></div>
+      <div class="note"><h3>التهيئة والانتشار العكسي أساسيان</h3><p>إذا بدأت كل الأوزان بنفس القيمة، تبقى العصبونات متطابقة إلى الأبد وتتصرّف الشبكة كعصبون واحد. وإذا أوقفت الانتشار العكسي عن الطبقات المخفية، تبقى ميزاتها عشوائية ولا تقدر طبقة المخرج وحدها على رسم الشكل.</p></div>
+      <div class="note"><h3>السعة والتنظيم</h3><p>شبكة بثلاثة عصبونات فقط ترسم شكلًا تقريبيًا بخطوط قليلة. تنظيم L2 القوي يعاقب الأوزان الكبيرة، فتصبح الحدود ناعمة وتضيع التفاصيل الصغيرة مثل العيون في الوجه المبتسم.</p></div>
+    </div>
+  </section>
+
+  <footer>جرّب أنماطًا مختلفة: الحلقة ورقعة الشطرنج أصعب من القلب، وتكشف الفروق بين الخوارزميات بوضوح أكبر. النتائج الدقيقة تتغيّر مع النمط، فالأرقام في الجدول تُحسب مباشرة في متصفحك.</footer>
+</div>
+
+<script>
+(function(){
+const N=16, MAX=1500, SNAPS=[0,50,200,600,1500];
+const PAL=[[26,24,48],[58,46,106],[124,79,159],[224,115,154],[255,216,168]];
+
+// ---------- engine ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+class MLP{
+  constructor(cfg){
+    this.cfg=cfg;const sizes=[2,...cfg.hidden,1];this.sizes=sizes;this.L=sizes.length-1;
+    const rnd=mulberry32(cfg.seed||7);
+    this.W=[];this.b=[];this.gW=[];this.gb=[];this.m=[];this.v=[];this.mb=[];this.vb=[];
+    for(let l=0;l<this.L;l++){
+      const i=sizes[l],o=sizes[l+1],W=new Float64Array(o*i),lim=Math.sqrt(6/(i+o));
+      for(let k=0;k<W.length;k++){const r=rnd()*2-1;W[k]=cfg.init==='const'?0.3:r*lim;}
+      this.W.push(W);this.b.push(new Float64Array(o));
+      this.gW.push(new Float64Array(o*i));this.gb.push(new Float64Array(o));
+      this.m.push(new Float64Array(o*i));this.v.push(new Float64Array(o*i));
+      this.mb.push(new Float64Array(o));this.vb.push(new Float64Array(o));
+    }
+    this.a=sizes.map(s=>new Float64Array(s));this.d=sizes.map(s=>new Float64Array(s));
+    this.t=0;this.ac={tanh:0,relu:1,sigmoid:2}[cfg.act||'tanh'];
+  }
+  forward(x,y){
+    const a=this.a,ac=this.ac;a[0][0]=x;a[0][1]=y;
+    for(let l=0;l<this.L;l++){
+      const i=this.sizes[l],o=this.sizes[l+1],W=this.W[l],b=this.b[l],ain=a[l],aout=a[l+1],last=l===this.L-1;
+      for(let j=0;j<o;j++){let s=b[j];const r=j*i;for(let k=0;k<i;k++)s+=W[r+k]*ain[k];
+        aout[j]=last?1/(1+Math.exp(-s)):(ac===0?Math.tanh(s):ac===1?(s>0?s:0):1/(1+Math.exp(-s)));}
+    }
+    return a[this.L][0];
+  }
+  epoch(X,Y){
+    const L=this.L,cfg=this.cfg,n=Y.length,first=cfg.lastOnly?L-1:0,ac=this.ac;
+    for(let l=0;l<L;l++){this.gW[l].fill(0);this.gb[l].fill(0);}
+    let loss=0,correct=0;
+    for(let s=0;s<n;s++){
+      const p=this.forward(X[2*s],X[2*s+1]),y=Y[s],pc=Math.min(1-1e-7,Math.max(1e-7,p));
+      loss-=y*Math.log(pc)+(1-y)*Math.log(1-pc);
+      if((p>0.5)===(y>0.5))correct++;
+      this.d[L][0]=p-y;
+      for(let l=L-1;l>=first;l--){
+        const i=this.sizes[l],o=this.sizes[l+1],W=this.W[l],gW=this.gW[l],gb=this.gb[l],ain=this.a[l],dout=this.d[l+1],din=this.d[l];
+        for(let j=0;j<o;j++){const dj=dout[j];if(dj===0)continue;gb[j]+=dj;const r=j*i;for(let k=0;k<i;k++)gW[r+k]+=dj*ain[k];}
+        if(l>first){for(let k=0;k<i;k++){let s2=0;for(let j=0;j<o;j++)s2+=W[j*i+k]*dout[j];const av=ain[k];din[k]=s2*(ac===0?1-av*av:ac===1?(av>0?1:0):av*(1-av));}}
+      }
+    }
+    this.t++;
+    const lr=cfg.lr,opt=cfg.opt,l2=cfg.l2||0,b1=0.9,b2=0.999,eps=1e-8,bc1=1-Math.pow(b1,this.t),bc2=1-Math.pow(b2,this.t);
+    for(let l=first;l<L;l++){
+      const sets=[[this.W[l],this.gW[l],this.m[l],this.v[l],true],[this.b[l],this.gb[l],this.mb[l],this.vb[l],false]];
+      for(const [P,G,M,V,isW] of sets){
+        for(let k=0;k<P.length;k++){
+          let g=G[k]/n;if(isW&&l2)g+=l2*P[k];
+          if(opt==='sgd')P[k]-=lr*g;
+          else if(opt==='momentum'){M[k]=0.9*M[k]+g;P[k]-=lr*M[k];}
+          else if(opt==='rmsprop'){V[k]=0.9*V[k]+0.1*g*g;P[k]-=lr*g/(Math.sqrt(V[k])+eps);}
+          else{M[k]=b1*M[k]+(1-b1)*g;V[k]=b2*V[k]+(1-b2)*g*g;P[k]-=lr*(M[k]/bc1)/(Math.sqrt(V[k]/bc2)+eps);}
+        }
+      }
+    }
+    return{loss:loss/n,acc:correct/n};
+  }
+}
+
+// ---------- patterns ----------
+function proc(f){const g=new Uint8Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){const u=(x+.5)/N*2-1,v=(y+.5)/N*2-1;g[y*N+x]=f(u,v)?1:0;}return g;}
+function fromStr(rows){const g=new Uint8Array(N*N);rows.forEach((r,y)=>{for(let x=0;x<N;x++)g[y*N+x]=r[x]==='#'?1:0;});return g;}
+const PRESETS=[
+ {id:'heart',name:'قلب',g:()=>fromStr(["................","................","...###....###...","..#####..#####..",".##############.",".##############.",".##############.","..############..","...##########...","....########....",".....######.....","......####......",".......##.......","................","................","................"])},
+ {id:'smile',name:'وجه مبتسم',g:()=>fromStr(["................",".....######.....","...##########...","..############..",".####..##..####.",".####..##..####.","################","################","################",".##.########.##.",".###.######.###.","..###......###..","...##########...",".....######.....","................","................"])},
+ {id:'ring',name:'حلقة',g:()=>proc((u,v)=>{const r=Math.hypot(u,v);return r>.4&&r<.85;})},
+ {id:'wave',name:'موجة',g:()=>proc((u,v)=>v>.45*Math.sin(u*3.2)-.1&&v<.45*Math.sin(u*3.2)+.45)},
+ {id:'checker',name:'رقعة شطرنج',g:()=>proc((u,v)=>((Math.floor((u+1)*2)+Math.floor((v+1)*2))%2)===0)},
+ {id:'clear',name:'مسح',g:()=>new Uint8Array(N*N)}
+];
+
+// ---------- variants ----------
+const H=[16,16];
+const VARIANTS=[
+ {id:'base',cat:'المرجع',name:'الشبكة الطبيعية',chg:'Adam · tanh · lr 0.01',cfg:{opt:'adam',lr:.01,act:'tanh',hidden:H},why:'نقطة المقارنة. كل بطاقة أخرى تغيّر شيئًا واحدًا فقط عن هذه.'},
+ {id:'sgd',cat:'المُحسِّن',name:'SGD عادي',chg:'Adam → SGD · lr 0.3',cfg:{opt:'sgd',lr:.3,act:'tanh',hidden:H},why:'خطوة ثابتة لكل الأوزان. أعطيناه معدلًا أعلى (0.3) لأنه بمعدل 0.01 لا يتحرّك تقريبًا، ومع ذلك يبقى أبطأ.'},
+ {id:'mom',cat:'المُحسِّن',name:'SGD مع زخم',chg:'Momentum 0.9 · lr 0.05',cfg:{opt:'momentum',lr:.05,act:'tanh',hidden:H},why:'يجمع اتجاه الخطوات السابقة مثل كرة تتدحرج، فيتجاوز المناطق المسطّحة أسرع من SGD.'},
+ {id:'rms',cat:'المُحسِّن',name:'RMSProp',chg:'Adam → RMSProp',cfg:{opt:'rmsprop',lr:.01,act:'tanh',hidden:H},why:'يقسم الخطوة على متوسط مربعات التدرّج، فكل وزن يأخذ خطوة بحجم مناسب له. قريب من Adam لكن بدون زخم.'},
+ {id:'relu',cat:'دالة التفعيل',name:'ReLU',chg:'tanh → ReLU',cfg:{opt:'adam',lr:.01,act:'relu',hidden:H},why:'دالة خطية مقطّعة، لذلك الحواف تطلع مستقيمة وبزوايا. سريعة، لكن بعض العصبونات قد تموت (تبقى صفرًا).'},
+ {id:'sig',cat:'دالة التفعيل',name:'Sigmoid',chg:'tanh → Sigmoid',cfg:{opt:'adam',lr:.01,act:'sigmoid',hidden:H},why:'مخرجاتها كلها موجبة ومشتقتها صغيرة، فالتدرّج يضعف عبر الطبقات ويبدأ التعلّم ببطء.'},
+ {id:'hi',cat:'معدل التعلّم',name:'معدل تعلّم مرتفع',chg:'lr 0.01 → 0.5',cfg:{opt:'adam',lr:.5,act:'tanh',hidden:H},why:'خطوات ضخمة تقفز فوق الحل. راقب الخط البياني: الخسارة تتذبذب، والصورة قد تقترب من الشكل ثم تنهار.'},
+ {id:'lo',cat:'معدل التعلّم',name:'معدل تعلّم منخفض',chg:'lr 0.01 → 0.0005',cfg:{opt:'adam',lr:.0005,act:'tanh',hidden:H},why:'آمن لكنه بطيء جدًا. الصورة تبقى ضبابية لفترة طويلة قبل أن تظهر التفاصيل.'},
+ {id:'cst',cat:'التهيئة',name:'تهيئة متطابقة',chg:'all weights = 0.3',cfg:{opt:'adam',lr:.01,act:'tanh',hidden:H,init:'const'},why:'كل العصبونات تبدأ متطابقة وتأخذ نفس التدرّج، فتبقى متطابقة دائمًا. الشبكة كلها تتصرّف كعصبون واحد.'},
+ {id:'last',cat:'الانتشار العكسي',name:'بدون انتشار عكسي',chg:'train output layer only',cfg:{opt:'adam',lr:.01,act:'tanh',hidden:H,lastOnly:true},why:'نوقف الانتشار العكسي عن الطبقات المخفية، فتبقى ميزاتها عشوائية. هذا يوضّح لماذا الانتشار العكسي هو قلب التدريب.'},
+ {id:'tiny',cat:'السعة',name:'شبكة صغيرة',chg:'2 → 3 → 1',cfg:{opt:'adam',lr:.01,act:'tanh',hidden:[3]},why:'ثلاثة عصبونات تعني ثلاثة خطوط تقريبًا لتقسيم الصورة، فلا تكفي لرسم التفاصيل.'},
+ {id:'l2',cat:'التنظيم',name:'تنظيم L2 قوي',chg:'L2 λ = 0.01',cfg:{opt:'adam',lr:.01,act:'tanh',hidden:H,l2:.01},why:'يعاقب الأوزان الكبيرة فتبقى الدالة ناعمة. مفيد ضد الحفظ، لكن بهذه القوة يمحو التفاصيل الصغيرة.'}
+];
+
+// ---------- data ----------
+let target=PRESETS[0].g(), activePreset='heart';
+const X=new Float64Array(N*N*2),Y=new Float64Array(N*N);
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x;X[2*i]=(x+.5)/N*2-1;X[2*i+1]=(y+.5)/N*2-1;}
+function syncY(){for(let i=0;i<N*N;i++)Y[i]=target[i];}
+
+// ---------- drawing ----------
+function color(p){const idx=Math.min(4,Math.floor(p*5));return PAL[idx];}
+function paintGrid(ctx,scale,pred,showErr,errColor){
+  const img=ctx.createImageData(N*scale,N*scale),d=img.data,W=N*scale;
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const p=pred[y*N+x],c=color(p),wrong=showErr&&((p>.5)!==(target[y*N+x]===1));
+    for(let yy=0;yy<scale;yy++)for(let xx=0;xx<scale;xx++){
+      const o=((y*scale+yy)*W+x*scale+xx)*4;
+      let r=c[0],g=c[1],b=c[2];
+      if(wrong){const edge=xx===0||yy===0||xx===scale-1||yy===scale-1;const diag=xx===yy||xx===scale-1-yy;if(edge||diag){r=errColor[0];g=errColor[1];b=errColor[2];}}
+      d[o]=r;d[o+1]=g;d[o+2]=b;d[o+3]=255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+}
+function predict(net,out){for(let i=0;i<N*N;i++)out[i]=net.forward(X[2*i],X[2*i+1]);return out;}
+
+// ---------- editor ----------
+const ed=document.getElementById('editor'),edc=ed.getContext('2d');
+function drawEditor(){const img=edc.createImageData(N,N);for(let i=0;i<N*N;i++){const c=target[i]?PAL[4]:PAL[0];img.data.set([c[0],c[1],c[2],255],i*4);}edc.putImageData(img,0,0);}
+let painting=false,paintVal=1,dirty=false;
+function cellAt(e){const r=ed.getBoundingClientRect();const x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N);return(x>=0&&y>=0&&x<N&&y<N)?y*N+x:-1;}
+ed.addEventListener('pointerdown',e=>{const i=cellAt(e);if(i<0)return;painting=true;ed.setPointerCapture(e.pointerId);paintVal=target[i]?0:1;target[i]=paintVal;dirty=true;drawEditor();setPreset(null);});
+ed.addEventListener('pointermove',e=>{if(!painting)return;const i=cellAt(e);if(i<0||target[i]===paintVal)return;target[i]=paintVal;dirty=true;drawEditor();});
+function endPaint(){if(!painting)return;painting=false;if(dirty){dirty=false;reset();}}
+ed.addEventListener('pointerup',endPaint);ed.addEventListener('pointercancel',endPaint);
+
+const presetsEl=document.getElementById('presets');
+PRESETS.forEach(p=>{const b=document.createElement('button');b.className='chipbtn';b.type='button';b.textContent=p.name;b.dataset.id=p.id;b.setAttribute('aria-pressed',p.id===activePreset?'true':'false');
+  b.addEventListener('click',()=>{target=p.g();setPreset(p.id==='clear'?null:p.id);drawEditor();reset();});presetsEl.appendChild(b);});
+function setPreset(id){activePreset=id;presetsEl.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id?'true':'false'));}
+
+// ---------- cards ----------
+const grid=document.getElementById('grid');
+const runs=VARIANTS.map(v=>{
+  const el=document.createElement('article');el.className='card'+(v.id==='base'?' ref':'');
+  el.innerHTML=`<div><div class="cat">${v.cat}</div><h3>${v.name}</h3><div class="chg">${v.chg}</div></div>
+   <canvas class="screen" width="${N*10}" height="${N*10}" aria-label="ما رسمته الشبكة: ${v.name}"></canvas>
+   <div class="stats"><div class="stat"><span>الدقة</span><b data-k="acc">–</b></div><div class="stat"><span>الخسارة</span><b data-k="loss">–</b></div><div class="stat"><span>95% عند</span><b data-k="hit">–</b></div></div>
+   <canvas class="spark" aria-hidden="true"></canvas>
+   <div class="film">${SNAPS.map(s=>`<figure><canvas width="${N}" height="${N}"></canvas><figcaption>${s}</figcaption></figure>`).join('')}</div>
+   <p class="why">${v.why}</p>`;
+  grid.appendChild(el);
+  const spark=el.querySelector('.spark');
+  return{v,el,screen:el.querySelector('.screen').getContext('2d'),spark,sctx:spark.getContext('2d'),film:[...el.querySelectorAll('.film canvas')],
+    stat:{acc:el.querySelector('[data-k=acc]'),loss:el.querySelector('[data-k=loss]'),hit:el.querySelector('[data-k=hit]')},
+    pred:new Float32Array(N*N),net:null,hist:[],acc:0,loss:0,hit:null,thumb:null};
+});
+
+// ---------- training loop ----------
+let epoch=0,playing=true,budget=12;
+function reset(){
+  syncY();epoch=0;
+  runs.forEach(r=>{r.net=new MLP({...r.v.cfg,seed:7});r.hist=[];r.acc=0;r.loss=0;r.hit=null;
+    r.film.forEach(c=>{c.classList.remove('on');c.getContext('2d').clearRect(0,0,N,N);});
+    predict(r.net,r.pred);snap(r,0);
+    let c=0,l=0;for(let i=0;i<N*N;i++){const p=r.pred[i];if((p>.5)===(Y[i]>.5))c++;const pc=Math.min(1-1e-7,Math.max(1e-7,p));l-=Y[i]*Math.log(pc)+(1-Y[i])*Math.log(1-pc);}
+    r.acc=c/(N*N);r.loss=l/(N*N);
+  });
+  renderAll(true);
+}
+function snap(r,e){const i=SNAPS.indexOf(e);if(i<0)return;const c=r.film[i];paintGrid(c.getContext('2d'),1,r.pred,false);c.classList.add('on');}
+function step(){
+  if(epoch>=MAX)return;
+  epoch++;
+  for(const r of runs){
+    const res=r.net.epoch(X,Y);r.acc=res.acc;r.loss=res.loss;r.hist.push(res.loss);
+    if(r.hit===null&&res.acc>=.95)r.hit=epoch;
+    if(SNAPS.includes(epoch)){predict(r.net,r.pred);snap(r,epoch);}
+  }
+}
+let frame=0;
+function loop(){
+  if(playing&&epoch<MAX){const t0=performance.now();do{step();}while(performance.now()-t0<budget&&epoch<MAX);renderAll(false);
+    if(epoch>=MAX){playBtn.textContent='انتهى التدريب';}}
+  requestAnimationFrame(loop);
+}
+
+// ---------- rendering ----------
+function css(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
+function hexToRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return[n>>16&255,n>>8&255,n&255];}
+const epochEl=document.getElementById('epoch'),progEl=document.getElementById('prog'),errsEl=document.getElementById('errs'),boardEl=document.getElementById('board');
+function fmtLoss(l){return l<.001?l.toExponential(1):l.toFixed(3);}
+function renderAll(force){
+  frame++;
+  epochEl.textContent=epoch;progEl.style.width=(epoch/MAX*100)+'%';
+  const showErr=errsEl.checked,accent=css('--accent'),muted=css('--line'),bad=hexToRgb(css('--bad')||'#c8402f');
+  for(const r of runs){
+    predict(r.net,r.pred);paintGrid(r.screen,10,r.pred,showErr,bad);
+    r.stat.acc.textContent=(r.acc*100).toFixed(1)+'%';
+    r.stat.loss.textContent=fmtLoss(r.loss);
+    r.stat.hit.textContent=r.hit===null?'—':r.hit;
+    drawSpark(r,accent,muted);
+  }
+  if(force||frame%10===0||epoch>=MAX)renderBoard();
+}
+function drawSpark(r,accent,grid){
+  const c=r.spark,dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;
+  if(!w)return;
+  if(c.width!==Math.round(w*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);}
+  const x=r.sctx;x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);
+  // grid lines at loss 1, 0.1, 0.01, 0.001
+  const lo=-4,hi=0.3,Yp=l=>{const v=Math.log10(Math.max(l,1e-4));return h-2-(v-lo)/(hi-lo)*(h-4);};
+  x.strokeStyle=grid;x.lineWidth=1;x.beginPath();
+  for(const g of[1,.1,.01,.001]){const yy=Math.round(Yp(g))+.5;x.moveTo(0,yy);x.lineTo(w,yy);}x.stroke();
+  const hst=r.hist;if(hst.length<2)return;
+  x.strokeStyle=accent;x.lineWidth=1.5;x.beginPath();
+  const stepN=Math.max(1,Math.floor(hst.length/w));
+  for(let i=0;i<hst.length;i+=stepN){const xx=(i+1)/MAX*w,yy=Yp(hst[i]);i===0?x.moveTo(xx,yy):x.lineTo(xx,yy);}
+  x.stroke();
+  const lx=hst.length/MAX*w,ly=Yp(hst[hst.length-1]);x.fillStyle=accent;x.beginPath();x.arc(lx,ly,2.5,0,Math.PI*2);x.fill();
+}
+function renderBoard(){
+  const base=runs[0];
+  const sorted=[...runs].sort((a,b)=>b.acc-a.acc||((a.hit??1e9)-(b.hit??1e9))||a.loss-b.loss);
+  boardEl.innerHTML='';
+  sorted.forEach((r,i)=>{
+    const tr=document.createElement('tr');if(r.v.id==='base')tr.className='refrow';
+    const d=(r.acc-base.acc)*100;
+    const diff=r.v.id==='base'?'<span class="muted">المرجع</span>':`<span class="status ${d>=-0.5?'good':'bad'}">${d>=0?'+':''}${d.toFixed(1)} نقطة</span>`;
+    tr.innerHTML=`<td class="num">${i+1}</td><td><canvas width="${N}" height="${N}"></canvas></td><td><b>${r.v.name}</b><div class="muted" style="font-size:12px">${r.v.cat}</div></td>
+      <td><div class="accbar"><i style="width:${Math.max(2,(r.acc-.4)/.6*120)}px"></i><span>${(r.acc*100).toFixed(1)}%</span></div></td>
+      <td class="num">${fmtLoss(r.loss)}</td><td class="num">${r.hit===null?'—':r.hit}</td><td>${diff}</td>`;
+    boardEl.appendChild(tr);
+    paintGrid(tr.querySelector('canvas').getContext('2d'),1,r.pred,false);
+  });
+}
+
+// ---------- controls ----------
+const playBtn=document.getElementById('play');
+playBtn.addEventListener('click',()=>{if(epoch>=MAX){reset();playing=true;playBtn.textContent='إيقاف مؤقت';return;}playing=!playing;playBtn.textContent=playing?'إيقاف مؤقت':'تشغيل';});
+document.getElementById('reset').addEventListener('click',()=>{reset();playing=true;playBtn.textContent='إيقاف مؤقت';});
+document.getElementById('speed').addEventListener('change',e=>{budget=+e.target.value;});
+errsEl.addEventListener('change',()=>renderAll(true));
+const origReset=reset;
+reset=function(){origReset();playing=true;playBtn.textContent='إيقاف مؤقت';};
+
+drawEditor();reset();
+// warm start: train the first 50 epochs before the first frame so the page never opens blank
+for(let i=0;i<50;i++)step();renderAll(true);
+requestAnimationFrame(loop);
+})();
+</script>
+</body></html>
